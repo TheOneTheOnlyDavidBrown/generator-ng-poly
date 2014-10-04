@@ -1,10 +1,17 @@
 {
   "name": "<%= appName %>",
-  "version": "0.0.0",
+  "version": "0.0.0"<% if (server) { %>,
+  "main": "server/index.js"<% } %>,
   "scripts": {
     "test": "gulp test"
   },
-  "dependencies": {},
+  "dependencies": {<% if (server === 'hapi') { %>
+    "good": "^2.3.0",
+    "hapi": "^6.10.0",
+    "hapi-swagger": "^0.3.0",
+    "joi": "^4.7.0",
+    "require-all": "0.0.8"
+  <% } %>},
   "devDependencies": {
     "browser-sync": "^1.3.3",
     "coffee-script": "^1.7.1",

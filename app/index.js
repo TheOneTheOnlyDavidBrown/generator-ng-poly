@@ -19,17 +19,17 @@ Generator.prototype.prompting = function prompting() {
   },
   {
     name: 'host',
-    message: 'What host should the app run on?',
+    message: 'What host should the client run on?',
     default: 'localhost'
   },
   {
     name: 'port',
-    message: 'Which port should the app run on?',
+    message: 'Which port should the client run on?',
     default: 3000
   },
   {
     name: 'appDir',
-    message: 'Which folder should the app be developed in?',
+    message: 'Which folder should the client be developed in?',
     default: 'app'
   },
   {
@@ -88,7 +88,7 @@ Generator.prototype.prompting = function prompting() {
   },
   {
     name: 'unitTestDir',
-    message: 'Where should unit tests be saved?',
+    message: 'Where should client unit tests be saved?',
     default: 'app'
   },
   {
@@ -220,6 +220,12 @@ Generator.prototype.prompting = function prompting() {
         value: 'restangular'
       }
     ]
+  },
+  {
+    type: 'confirm',
+    name: 'server',
+    message: 'Should a Hapi server be setup?',
+    default: false
   }], function (props) {
     this.appName = props.appName;
     this.appDir = props.appDir;
@@ -238,6 +244,7 @@ Generator.prototype.prompting = function prompting() {
     this.ngRoute = props.ngRoute;
     this.framework = props.framework;
     this.bower = props.bower.join(',');
+    this.server = props.server;
 
     done();
   }.bind(this));
@@ -262,6 +269,11 @@ Generator.prototype.configuring = function configuring() {
   this.config.set('ngRoute', this.ngRoute);
   this.config.set('lastUsedModule', 'home');
 
+  if (this.server) {
+    this.server = 'hapi'; // used in package.json
+    this.config.set('server', 'hapi');
+  }
+
   // force save to guarantee config exists for controller
   // tests randomly fail without this
   this.config.forceSave();
@@ -279,9 +291,12 @@ Generator.prototype.configuring = function configuring() {
     framework: this.framework,
     testFramework: this.testFramework,
     ngRoute: this.ngRoute,
-    bower: this.bower
+    bower: this.bower,
+    server: this.server
   };
+};
 
+Generator.prototype.writing = function writing() {
   // copy over common files
   this.copy('.bowerrc', '.bowerrc');
   this.copy('.editorconfig', '.editorconfig');
@@ -300,9 +315,6 @@ Generator.prototype.configuring = function configuring() {
   this.template('_build.js', path.join('gulp', 'build.js'), this.context);
   this.template('_test.js', path.join('gulp', 'test.js'), this.context);
   this.copy('watch.js', path.join('gulp', 'watch.js'));
-};
-
-Generator.prototype.writing = function writing() {
   this.mkdir(this.appDir);
 
   // create main module and index.html
@@ -313,6 +325,12 @@ Generator.prototype.writing = function writing() {
 
   this.mkdir(path.join(this.appDir, 'fonts'));
   this.mkdir(path.join(this.appDir, 'images'));
+
+  // if using Hapi, copy over files
+  if (this.server === 'hapi') {
+    this.mkdir('server');
+    this.copy('server.js', path.join('server', 'index.js'));
+  }
 };
 
 Generator.prototype.install = function install() {
