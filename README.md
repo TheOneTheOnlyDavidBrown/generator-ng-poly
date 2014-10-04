@@ -9,7 +9,7 @@ This generator focuses on organizing Angular components by feature (home, about,
 
 A typical workflow with this generator consists of creating an Angular module ([ng-poly:module](#module)) and then generating controllers, directives, etc. for this module to create a new feature.
 
-**Polymer is just an added feature, but it isn't required to utilize this generator.**
+**Polymer and Hapi are just additional features, but aren't required to utilize this generator.**
 
 ## Usage
 
@@ -63,12 +63,14 @@ Languages and Features supported:
     - Mocha with Chai (Karma as the test runner) for AngularJS
   * e2e testing
     - Protractor (Jasmine) for AngularJS
-  * Frameworks
+  * UI frameworks
     - Bootstrap with AngularStrap
     - Bootstrap with UI Bootstrap
     - Foundation with Angular Foundation
   * Polymer
     - Core, Paper
+  * Server frameworks
+    - Hapi
   * Task runners
     - Gulp
   * Other supported Bower packages:
@@ -140,6 +142,7 @@ yo ng-poly
 [?] Should a framework be setup?
 [?] Should ngRoute be used instead of UI Router?
 [?] Which additional Bower components should be installed?
+[?] Should a Hapi server be setup?
 ```
 
 Produces:
@@ -167,6 +170,8 @@ root/
 │   ├── test.js
 │   └── watch.js
 ├── node_modules/
+├── server/
+│   └── index.js
 ├── .bowerrc
 ├── .editorconfig
 ├── .jscsrc
