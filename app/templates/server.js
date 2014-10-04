@@ -1,6 +1,5 @@
 'use strict';
-var fs = require('fs')
-  , hapi = require('hapi')
+var hapi = require('hapi')
   , path = require('path')
   , requireAll = require('require-all')
   , server = new hapi.Server('localhost', 8000, {
