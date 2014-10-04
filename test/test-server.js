@@ -35,6 +35,7 @@ describe('ng-poly with server', function () {
 
   it('should create server files', function () {
     assert.file([
+      'server/api',
       'server/index.js'
     ]);
   });

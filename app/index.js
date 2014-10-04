@@ -330,6 +330,8 @@ Generator.prototype.writing = function writing() {
   if (this.server === 'hapi') {
     this.mkdir('server');
     this.copy('server.js', path.join('server', 'index.js'));
+
+    this.mkdir(path.join('server', 'api'));
   }
 };
 

@@ -10,14 +10,12 @@ var fs = require('fs')
   })
   , apis;
 
-// include all apis listed in api directory
-if (fs.existsSync(path.join(__dirname, 'api'))) {
-  apis = requireAll(path.join(__dirname, 'api'));
+// include all apis in api directory
+apis = requireAll(path.join(__dirname, 'api'));
 
-  Object.keys(apis).forEach(function (key) {
-    apis[key].index(server);
-  });
-}
+Object.keys(apis).forEach(function (key) {
+  apis[key].index(server);
+});
 
 // enable system logging
 server.pack.register(require('good'), function (err) {
