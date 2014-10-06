@@ -1,7 +1,7 @@
 {
   "name": "<%= appName %>",
   "version": "0.0.0"<% if (server) { %>,
-  "main": "server/index.js"<% } %>,
+  "main": "server"<% } %>,
   "scripts": {
     "test": "gulp test"
   },

@@ -329,7 +329,7 @@ Generator.prototype.writing = function writing() {
   // if using Hapi, copy over files
   if (this.server === 'hapi') {
     this.mkdir('server');
-    this.copy('server.js', path.join('server', 'index.js'));
+    this.copy('server.' + this.appScript, path.join('server', 'index.' + this.appScript));
 
     this.mkdir(path.join('server', 'api'));
   }

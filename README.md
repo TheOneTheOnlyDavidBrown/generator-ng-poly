@@ -171,7 +171,7 @@ root/
 │   └── watch.js
 ├── node_modules/
 ├── server/
-│   └── index.js
+│   └── index.{cofee,js}
 ├── .bowerrc
 ├── .editorconfig
 ├── .jscsrc
