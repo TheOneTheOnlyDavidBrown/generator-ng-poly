@@ -1,6 +1,8 @@
 'use strict';
-var fs = require('fs')
+var _ = require('lodash')
+  , fs = require('fs')
   , genBase = require('../genBase')
+  , ngAddDep = require('ng-add-dep')
   , path = require('path')
   , utils = require('../utils')
   , Generator;
@@ -28,6 +30,11 @@ Generator.prototype.writing = function writing() {
   parentModuleDir = null;
   this.context.templateUrl = path.join(this.module).replace(/\\/g, '/');
   this.context.modulePath = utils.normalizeModulePath(this.module);
+  if (this.context.appScript === 'ts') {
+    this.context.referncePath = path.relative(this.context.modulePath, path.dirname(this.config.path));
+    this.context.referncePath = this.context.referncePath.replace('\\', '/');
+    this.context.referncePath = '../' + this.context.referncePath + '/typings/tsd.d.ts';
+  }
 
   // create new module directory
   this.mkdir(path.join(this.context.appDir, this.context.modulePath));
@@ -36,24 +43,28 @@ Generator.prototype.writing = function writing() {
   // if yes - get root app.js to prepare adding dep
   // else - get parent app.js to prepare adding dep
   if (this.context.moduleName === this.module) {
-    filePath = path.join(this.context.appDir, '..', this.context.appDir, 'app.coffee');
 
-    // if CoffeeScript app doesn't exist, use JavaScript app
-    if (!fs.existsSync(filePath)) {
-      filePath = path.join(this.context.appDir, '..', this.context.appDir, 'app.js');
-    }
+    filePath = _.find([
+      path.join(this.context.appDir, 'app.ts'),
+      path.join(this.context.appDir, 'app.coffee'),
+      path.join(this.context.appDir, 'app.js')
+    ], function (appFile) {
+      return fs.existsSync(appFile);
+    });
+
   } else {
     parentDir = path.resolve(path.join(this.context.appDir, this.context.modulePath), '..');
 
     // for templating to create a parent.child module name
     parentModuleDir = path.basename(parentDir);
 
-    filePath = path.join(parentDir, parentModuleDir + '.coffee');
-
-    // if CoffeeScript parent module doesn't exist, use JavaScript parent module
-    if (!fs.existsSync(filePath)) {
-      filePath = path.join(parentDir, parentModuleDir + '.js');
-    }
+    filePath = _.find([
+      path.join(this.context.appDir, this.context.modulePath, '..', parentModuleDir + '.ts'),
+      path.join(this.context.appDir, this.context.modulePath, '..', parentModuleDir + '.coffee'),
+      path.join(this.context.appDir, this.context.modulePath, '..', parentModuleDir + '.js')
+    ], function (appFile) {
+      return fs.existsSync(appFile);
+    });
   }
 
   file = fs.readFileSync(filePath, 'utf8');
@@ -61,20 +72,20 @@ Generator.prototype.writing = function writing() {
   // save modifications
   depName = (this.context.parentModuleName) ? this.context.parentModuleName + '.' : '';
   depName += this.context.lowerCamel;
-  fs.writeFileSync(filePath, utils.addDependency(file, depName));
+  fs.writeFileSync(filePath, ngAddDep(file, depName));
 
-  // create app.js
-  this.template('_app.' + this.context.appScript,
-    path.join(this.context.appDir, this.context.modulePath,
-      this.context.hyphenModule + '.' + this.context.appScript), this.context);
+  // create app.{cofee,js,ts}
+  this.fs.copyTpl(
+    this.templatePath('_app.' + this.context.appScript),
+    this.destinationPath(this.context.appDir + '/' + this.context.modulePath + '/' + this.context.hyphenModule +
+      '.' + this.context.appScript),
+    this.context
+  );
 };
 
 Generator.prototype.end = function end() {
   // save this module to suggest later
   this.config.set('lastUsedModule', this.module);
-
-  // prevents done() from being called out of sync
-  this.config.forceSave();
 
   if (this.options && !this.options.empty) {
     this.composeWith('ng-poly:route', {

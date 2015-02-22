@@ -2,16 +2,12 @@
 'use strict';
 var assert = require('yeoman-generator').assert
   , helpers = require('yeoman-generator').test
-  , join = require('path').join
-  , os = require('os');
+  , join = require('path').join;
 
 describe('View generator', function () {
   before(function (done) {
-    helpers.run(join(__dirname, '../app'))
-      .inDir(join(os.tmpDir(), 'temp-view'))
-      .withOptions({
-        'skip-install': true
-      })
+    helpers
+      .run(join(__dirname, '../app'))
       .withPrompts({
         appName: 'temp-view',
         markup: 'html',
@@ -35,7 +31,10 @@ describe('View generator', function () {
 
   describe('with HTML markup and LESS style', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../view'))
+      helpers
+        .run(join(__dirname, '../view'), {
+          tmpdir: false
+        })
         .withArguments(['test'])
         .withOptions({
           module: 'home'
@@ -50,11 +49,18 @@ describe('View generator', function () {
       ]);
     });
 
+    it('should have correct template contents', function () {
+      assert.fileContent('app/home/test.tpl.html', /<h2>test<\/h2>[^$]*<p>{{test.ctrlName}}<\/p>/);
+    });
+
   });
 
   describe('with HAML markup and CSS style', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../view'))
+      helpers
+        .run(join(__dirname, '../view'), {
+          tmpdir: false
+        })
         .withArguments(['test1'])
         .withOptions({
           module: 'home',
@@ -71,11 +77,18 @@ describe('View generator', function () {
       ]);
     });
 
+    it('should have correct template contents', function () {
+      assert.fileContent('app/home/test1.tpl.haml', /%h2 test1[^$]*%p {{test1.ctrlName}}/);
+    });
+
   });
 
   describe('with Jade markup and SCSS style', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../view'))
+      helpers
+        .run(join(__dirname, '../view'), {
+          tmpdir: false
+        })
         .withArguments(['test2'])
         .withOptions({
           module: 'home',
@@ -92,11 +105,18 @@ describe('View generator', function () {
       ]);
     });
 
+    it('should have correct template contents', function () {
+      assert.fileContent('app/home/test2.tpl.jade', /h2 test2[^$]*p {{test2.ctrlName}}/);
+    });
+
   });
 
   describe('with Jade markup and Stylus style', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../view'))
+      helpers
+        .run(join(__dirname, '../view'), {
+          tmpdir: false
+        })
         .withArguments(['test3'])
         .withOptions({
           module: 'home',

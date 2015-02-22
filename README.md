@@ -1,5 +1,5 @@
 # generator-ng-poly [![NPM version](https://badge.fury.io/js/generator-ng-poly.svg)](http://badge.fury.io/js/generator-ng-poly) [![Build Status](https://travis-ci.org/dustinspecker/generator-ng-poly.svg?branch=v0.0.9)](https://travis-ci.org/dustinspecker/generator-ng-poly) [![Coverage Status](https://img.shields.io/coveralls/dustinspecker/generator-ng-poly.svg)](https://coveralls.io/r/dustinspecker/generator-ng-poly?branch=master)
-[![Dependencies](https://david-dm.org/dustinspecker/generator-ng-poly.svg)](https://david-dm.org/dustinspecker/generator-ng-poly/#info=dependencies&view=table) [![DevDependencies](https://david-dm.org/dustinspecker/generator-ng-poly/dev-status.svg)](https://david-dm.org/dustinspecker/generator-ng-poly/#info=devDependencies&view=table) [![PeerDependencies](https://david-dm.org/dustinspecker/generator-ng-poly/peer-status.svg)](https://david-dm.org/dustinspecker/generator-ng-poly/#info=peerDependencies&view=table)
+[![Code Climate](https://codeclimate.com/github/dustinspecker/generator-ng-poly/badges/gpa.svg)](https://codeclimate.com/github/dustinspecker/generator-ng-poly) [![Dependencies](https://david-dm.org/dustinspecker/generator-ng-poly.svg)](https://david-dm.org/dustinspecker/generator-ng-poly/#info=dependencies&view=table) [![DevDependencies](https://david-dm.org/dustinspecker/generator-ng-poly/dev-status.svg)](https://david-dm.org/dustinspecker/generator-ng-poly/#info=devDependencies&view=table) [![PeerDependencies](https://david-dm.org/dustinspecker/generator-ng-poly/peer-status.svg)](https://david-dm.org/dustinspecker/generator-ng-poly/#info=peerDependencies&view=table)
 
 > [Yeoman](http://yeoman.io) generator for modular AngularJS apps with Gulp and optional Polymer support
 
@@ -19,10 +19,22 @@ Install `generator-ng-poly`:
 npm install -g generator-ng-poly
 ```
 
+Be sure to install `yo` before running any Yeoman generators:
+
+```
+npm install -g yo
+```
+
+If TypeScript is going to be used, `tsd@next` will need to be installed:
+
+```
+npm install -g tsd@next
+```
+
 Run `yo ng-poly`
 Yeoman will then ask for an app name and language preferences.
 
-Run `gulp` to build and start the development environment.
+Install `Gulp` via `npm install -g gulp` and run `gulp` to build and start the development environment.
 
 ## User Groups
 
@@ -53,9 +65,9 @@ Languages and Features supported:
   * Markup
     - HAML, HTML, Jade
   * Application scripting languages
-    - CoffeeScript †, JavaScript
+    - CoffeeScript, JavaScript, TypeScript
   * Testing scripting languages
-    - CoffeeScript, JavaScript
+    - CoffeeScript, JavaScript, TypeScript†
   * Style languages
     - CSS, LESS, SCSS, Stylus
   * Routers
@@ -88,13 +100,13 @@ Languages and Features supported:
 [Configurations](#configurations):
   * Syntax
     - [Controller As](#controller-as-syntax)
-    - [Pass Function](#pass-function)
+    - [Pass Function](#pass-functions)
     - [Named Functions](#named-functions)
 
-† Code coverage isn't currently performed on CoffeeScript application source code
+† e2e tests are not supported in TypeScript. JavaScript will instead be used for e2e tests.
 
 ### Gulp Tasks
-`gulp` will start a localhost and open in the default browser 
+`gulp` will start a localhost and open in the default browser
 
 Using `--stage prod` will concat and minify HTML, CSS, and Angular modules.
 
@@ -174,8 +186,10 @@ root/
 │   ├── test.js
 │   └── watch.js
 ├── node_modules/
+├── typings/*
 ├── .bowerrc
 ├── .editorconfig
+├── .gitignore
 ├── .jscsrc
 ├── .jshintrc
 ├── .yo-rc.json
@@ -185,9 +199,10 @@ root/
 ├── karma.config.js
 ├── package.json
 ├── protractor.config.js
-└── README.md
+├── README.md
+└── tsd.json*
 ```
-
+\* Only TypeScript projects will have this.
 ### Constant
 Generates a constant and its test.
 
@@ -250,10 +265,10 @@ Produces `app/module/micro-controller.js`:
 /**
  * @ngdoc object
  * @name module.controller:MicroCtrl
- * @requires $scope 
- * 
+ * @requires $scope
+ *
  * @description
- * 
+ *
  */
 angular
   .module('module')
@@ -941,7 +956,7 @@ Each generator is able to take the following arguments. For example, `yo ng-poly
 
 | Option | Possible Values|
 | ------ | -------------- |
-| app-script | coffee, js |
+| app-script | coffee, js, ts |
 | markup | haml, html, jade|
 | style | css, less, scss, styl|
 | test-script | coffee, js|
@@ -965,9 +980,9 @@ This will generate controllers like:
 /**
  * @ngdoc object
  * @name home.controller:HomeCtrl
- * 
+ *
  * @description
- * 
+ *
  */
 angular
   .module('home')

@@ -1,14 +1,16 @@
 'use strict';
 var buildConfig = require('./build.config.js')
   , preprocessors = {}
-  , buildDir
+  , buildTestDir
+  , templateDir
   , jsDir;
 
-buildDir = buildConfig.buildDir;
+buildTestDir = buildConfig.buildTestDir;
 // add slash if missing to properly strip prefix from directive templates
-if (buildDir[buildDir.length - 1] !== '/') {
-  buildDir = buildDir + '/';
+if (buildTestDir[buildTestDir.length - 1] !== '/') {
+  buildTestDir = buildTestDir + '/';
 }
+templateDir = buildTestDir + 'templates/';
 
 jsDir = buildConfig.buildJs;
 // add slash if missing to properly strip prefix from directive templates
@@ -16,9 +18,8 @@ if (jsDir[jsDir.length - 1] !== '/') {
   jsDir = jsDir + '/';
 }
 
-preprocessors['**/*.coffee'] = ['coffee'];
-preprocessors[jsDir + '**/!(*_test)+(.js)'] = ['coverage'];
-preprocessors[buildDir + '**/*-directive.tpl.html'] = ['ng-html2js'];
+preprocessors[jsDir + '**/*.js'] = ['coverage'];
+preprocessors[templateDir + '**/*-directive.tpl.html'] = ['ng-html2js'];
 
 module.exports = {
   browsers: ['PhantomJS'],
@@ -26,7 +27,7 @@ module.exports = {
   reporters: ['failed', 'coverage'],
   preprocessors: preprocessors,
   ngHtml2JsPreprocessor: {
-    stripPrefix: buildDir
+    stripPrefix: templateDir
   },
   singleRun: true
 };

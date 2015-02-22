@@ -19,11 +19,11 @@ Generator.prototype.writing = function writing() {
     markupFile = markupFile + '.tpl.html';
   }
 
-  // remove tplhtml from lowerCamel
-  config.lowerCamel = config.lowerCamel.replace(/tplhtml$/, '');
+  // remove TplHtml from lowerCamel
+  config.lowerCamel = config.lowerCamel.replace(/TplHtml$/, '');
 
-  // remove tplhtml from ctrlName
-  config.ctrlName = config.ctrlName.replace(/tplhtml$/, '');
+  // remove TplHtml from ctrlName
+  config.ctrlName = config.ctrlName.replace(/TplHtml$/, '');
 
   // create the style file
   styleFile = markupFile.replace(/tpl[.]html$/, config.style);
@@ -31,7 +31,9 @@ Generator.prototype.writing = function writing() {
   // replace file extension with markup type being used
   markupFile = markupFile.replace(/html$/, config.markup);
 
-  this.template('_view.' + config.markup,
-    path.join(config.appDir, config.modulePath, markupFile), config);
-  this.copy('style.' + config.style, path.join(config.appDir, config.modulePath, styleFile));
+  this.copyMarkup('view', path.join(config.appDir, config.modulePath, markupFile), config);
+  this.fs.copy(
+    this.templatePath('style.' + config.style),
+    this.destinationPath(config.appDir + '/' + config.modulePath + '/' + styleFile)
+  );
 };

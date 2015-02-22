@@ -2,16 +2,12 @@
 'use strict';
 var assert = require('yeoman-generator').assert
   , helpers = require('yeoman-generator').test
-  , join = require('path').join
-  , os = require('os');
+  , join = require('path').join;
 
 describe('Route generator', function () {
   before(function (done) {
-    helpers.run(join(__dirname, '../app'))
-      .inDir(join(os.tmpDir(), 'temp-route'))
-      .withOptions({
-        'skip-install': true
-      })
+    helpers
+      .run(join(__dirname, '../app'))
       .withPrompts({
         appName: 'temp-route',
         markup: 'html',
@@ -35,13 +31,14 @@ describe('Route generator', function () {
 
   describe('with HTML markup, Less style, JS app, JS test, and skipController', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../route'))
+      helpers
+        .run(join(__dirname, '../route'), {
+          tmpdir: false
+        })
         .withArguments(['test'])
         .withOptions({
           module: 'home',
-          'skip-controller': true,
-          'template-url': 'value',
-          url: 'value'
+          'skip-controller': true
         })
         .on('end', done);
     });
@@ -66,13 +63,13 @@ describe('Route generator', function () {
 
   describe('with Jade markup, CSS style, Coffee app, and Coffee test', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../route'))
+      helpers
+        .run(join(__dirname, '../route'), {
+          tmpdir: false
+        })
         .withArguments(['test1'])
         .withOptions({
           module: 'home',
-          'template-url': 'value',
-          url: 'value',
-
           markup: 'jade',
           style: 'css',
           'app-script': 'coffee',
@@ -96,13 +93,13 @@ describe('Route generator', function () {
 
   describe('with HAML markup, SCSS style, JS app, and JS test', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../route'))
-        .withArguments(['test'])
+      helpers
+        .run(join(__dirname, '../route'), {
+          tmpdir: false
+        })
+        .withArguments(['test.child'])
         .withOptions({
           module: 'home',
-          'template-url': 'value',
-          url: 'value',
-
           markup: 'haml',
           style: 'scss'
         })
@@ -111,12 +108,12 @@ describe('Route generator', function () {
 
     it('should create route files', function () {
       assert.file([
-        'app/home/test-controller.js',
-        'app/home/test-controller_test.js',
-        'app/home/test.tpl.haml',
-        'app/home/test.scss',
-        'e2e/test/test.po.js',
-        'e2e/test/test_test.js'
+        'app/home/test-child-controller.js',
+        'app/home/test-child-controller_test.js',
+        'app/home/test-child.tpl.haml',
+        'app/home/test-child.scss',
+        'e2e/test-child/test-child.po.js',
+        'e2e/test-child/test-child_test.js'
       ]);
     });
 
@@ -124,13 +121,13 @@ describe('Route generator', function () {
 
   describe('with HTML markup, Stylus style, JS app, and JS test', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../route'))
+      helpers
+        .run(join(__dirname, '../route'), {
+          tmpdir: false
+        })
         .withArguments(['test'])
         .withOptions({
           module: 'home',
-          'template-url': 'value',
-          url: 'value',
-
           style: 'styl'
         })
         .on('end', done);
@@ -144,6 +141,36 @@ describe('Route generator', function () {
         'app/home/test.styl',
         'e2e/test/test.po.js',
         'e2e/test/test_test.js'
+      ]);
+    });
+
+  });
+
+  describe('with Jade markup, CSS style, TypeScript app, and TypeScript test', function () {
+    before(function (done) {
+      helpers
+        .run(join(__dirname, '../route'), {
+          tmpdir: false
+        })
+        .withArguments(['test2'])
+        .withOptions({
+          module: 'home',
+          markup: 'jade',
+          style: 'css',
+          'app-script': 'ts',
+          'test-script': 'ts'
+        })
+        .on('end', done);
+    });
+
+    it('should create route files', function () {
+      assert.file([
+        'app/home/test2-controller.ts',
+        'app/home/test2-controller_test.ts',
+        'app/home/test2.tpl.jade',
+        'app/home/test2.css',
+        'e2e/test2/test2.po.js',
+        'e2e/test2/test2_test.js'
       ]);
     });
 

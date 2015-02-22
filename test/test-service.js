@@ -2,16 +2,12 @@
 'use strict';
 var assert = require('yeoman-generator').assert
   , helpers = require('yeoman-generator').test
-  , join = require('path').join
-  , os = require('os');
+  , join = require('path').join;
 
 describe('Service generator', function () {
   before(function (done) {
-    helpers.run(join(__dirname, '../app'))
-      .inDir(join(os.tmpDir(), 'temp-service'))
-      .withOptions({
-        'skip-install': true
-      })
+    helpers
+      .run(join(__dirname, '../app'))
       .withPrompts({
         appName: 'temp-service',
         markup: 'html',
@@ -35,7 +31,10 @@ describe('Service generator', function () {
 
   describe('with JS app and JS test', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../service'))
+      helpers
+        .run(join(__dirname, '../service'), {
+          tmpdir: false
+        })
         .withArguments(['test'])
         .withOptions({
           module: 'home'
@@ -54,7 +53,10 @@ describe('Service generator', function () {
 
   describe('with Coffee app and Coffee test', function () {
     before(function (done) {
-      helpers.run(join(__dirname, '../service'))
+      helpers
+        .run(join(__dirname, '../service'), {
+          tmpdir: false
+        })
         .withArguments(['test1'])
         .withOptions({
           module: 'home',
@@ -69,6 +71,31 @@ describe('Service generator', function () {
       assert.file([
         'app/home/test1-service.coffee',
         'app/home/test1-service_test.coffee'
+      ]);
+    });
+
+  });
+
+  describe('with TypeScript app and TypeScript test', function () {
+    before(function (done) {
+      helpers
+        .run(join(__dirname, '../service'), {
+          tmpdir: false
+        })
+        .withArguments(['test2'])
+        .withOptions({
+          module: 'home',
+          markup: 'jade',
+          'app-script': 'ts',
+          'test-script': 'ts'
+        })
+        .on('end', done);
+    });
+
+    it('should create service files', function () {
+      assert.file([
+        'app/home/test2-service.ts',
+        'app/home/test2-service_test.ts'
       ]);
     });
 

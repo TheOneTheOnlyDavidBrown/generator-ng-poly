@@ -2,8 +2,6 @@
 'use strict';
 var a = require('a')
   , assert = require('assert')
-  , fs = require('fs')
-  , path = require('path')
   , proxyquire = require('proxyquire')
   , utils = require('../utils/module');
 
@@ -41,19 +39,40 @@ describe('Module Utils', function () {
     });
   });
 
-  describe('dependencyExists', function () {
-    var fileContents;
+  describe('moduleExists', function () {
+    var pathStub, utilsProxy;
+
     beforeEach(function () {
-      fileContents = fs.readFileSync(path.join(__dirname, 'fixtures', 'app-has-state.js'), 'utf8');
+      pathStub = {
+        dirname: function () {
+          return '.yo-rc.json';
+        },
+        join: function () {
+          return 'app/home';
+        }
+      };
+      utilsProxy = proxyquire('../utils/module', {path: pathStub});
+
+      utilsProxy.getAppDir = function getAppDir() {
+        return 'app';
+      };
     });
 
-    it('should find existing dependency', function () {
-      assert(utils.dependencyExists(fileContents, 'ui.router') === true);
+    it('should return true when module is appDir', function () {
+      assert(utilsProxy.moduleExists('app') === true);
     });
 
-    it('should not find non-existing dependency', function () {
-      assert(utils.dependencyExists(fileContents, 'ngResource') === false);
-    });
+    // it('should call fs.exstsSync', function () {
+    //   var fsStub = {
+    //     existsSync: sinon.stub().returns(true)
+    //   };
+    //   utilsProxy = proxyquire('../utils/module', {fs: fsStub, path: pathStub});
+    //   utilsProxy.normalizeModulePath = function normalizeModulePath() {
+    //     return 'app/home';
+    //   };
+    //   utilsProxy.moduleExists('app/home');
+    //   assert(fsStub.existsSync.callCount === 1);
+    // });
   });
 
 });

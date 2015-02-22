@@ -1,12 +1,14 @@
 'use strict';
 
-var gulp = require('gulp')
+var _ = require('underscore.string')
+  , gulp = require('gulp')
   , path = require('path')
   , $ = require('gulp-load-plugins')({
     pattern: [
+      'del',
       'gulp-*',
       'main-bower-files',
-      'rimraf',
+      'nib',
       'streamqueue',
       'uglify-save-license',
       'wiredep',
@@ -20,18 +22,23 @@ var gulp = require('gulp')
   , appFontFiles = path.join(appBase, 'fonts/**/*')
   , appImages = path.join(appBase, 'images/**/*')
   , appMarkupFiles = path.join(appBase, '**/*.{haml,html,jade}')
-  , appScriptFiles = path.join(appBase, '**/*.{coffee,js}')
+  , appScriptFiles = path.join(appBase, '**/*.{ts,coffee,js}')
   , appStyleFiles = path.join(appBase, '**/*.{css,less,scss,styl}')
 
 <% if (polymer) { %>  , fs = require('fs')
   , path = require('path')
   , bowerDir = JSON.parse(fs.readFileSync('.bowerrc')).directory + path.sep
 
-<% } %>  , isProd = $.yargs.argv.stage === 'prod';
+<% } %>  , isProd = $.yargs.argv.stage === 'prod'
+
+  , tsProject = $.typescript.createProject({
+    declarationFiles: true,
+    noExternalResolve: false
+  });
 
 // delete build directory
 gulp.task('clean', function (cb) {
-  return $.rimraf(buildConfig.buildDir, cb);
+  return $.del(buildConfig.buildDir, cb);
 });
 
 // compile markup files and copy into build directory
@@ -59,9 +66,9 @@ gulp.task('styles', ['clean'], function () {
     , stylusFilter = $.filter('**/*.styl')
     , onError = function (err) {
       $.notify.onError({
-        title: 'Syntax error in CSS',
+        title: 'Error linting at ' + err.plugin,
         subtitle: ' ', //overrides defaults
-        message: ' ', //overrides defaults
+        message: err.message.replace(/\u001b\[.*?m/g, ''),
         sound: ' ' //overrides defaults
       })(err);
 
@@ -81,9 +88,32 @@ gulp.task('styles', ['clean'], function () {
     .pipe($.sass())
     .pipe(scssFilter.restore())
     .pipe(stylusFilter)
-    .pipe($.stylus())
+    .pipe($.stylus({
+      use: $.nib()
+    }))
     .pipe(stylusFilter.restore())
     .pipe($.autoprefixer())
+    .pipe($.if(isProd, $.cssRebaseUrls()))
+    .pipe($.if(isProd, $.modifyCssUrls({
+      modify: function (url) {
+        // determine if url is using http, https, or data protocol
+        // cssRebaseUrls rebases these URLs, too, so we need to fix that
+        var beginUrl = url.indexOf('http:');
+        if (beginUrl < 0) {
+          beginUrl = url.indexOf('https:');
+        }
+        if (beginUrl < 0) {
+          beginUrl = url.indexOf('data:');
+        }
+
+        if (beginUrl > -1) {
+          return url.substring(beginUrl, url.length);
+        }
+
+        // prepend all other urls
+        return '../' + url;
+      }
+    })))
     .pipe($.if(isProd, $.concat('app.css')))
     .pipe($.if(isProd, $.cssmin()))
     .pipe($.if(isProd, $.rev()))
@@ -92,7 +122,8 @@ gulp.task('styles', ['clean'], function () {
 
 // compile scripts and copy into build directory
 gulp.task('scripts', ['clean', 'analyze', 'markup'], function () {
-  var coffeeFilter = $.filter('**/*.coffee')
+  var typescriptFilter = $.filter('**/*.ts')
+    , coffeeFilter = $.filter('**/*.coffee')
     , htmlFilter = $.filter('**/*.html')
     , jsFilter = $.filter('**/*.js');
 
@@ -103,13 +134,16 @@ gulp.task('scripts', ['clean', 'analyze', 'markup'], function () {
     '!**/*_test.*',
     '!**/index.html'
   ])
-    .pipe($.cached('scripts'))
+    .pipe(typescriptFilter)
+    .pipe($.typescript(tsProject))
+    .pipe(typescriptFilter.restore())
     .pipe(coffeeFilter)
     .pipe($.coffee())
     .pipe(coffeeFilter.restore())
     .pipe($.if(isProd, htmlFilter))
     .pipe($.if(isProd, $.ngHtml2js({
-      moduleName: require('../package.json').name,
+      // lower camel case all app names
+      moduleName: _.camelize(_.slugify(_.humanize(require('../package.json').name))),
       declareModule: false
     })))
     .pipe($.if(isProd, htmlFilter.restore()))
@@ -226,10 +260,11 @@ gulp.task('bowerInject', ['bowerCopy'], function () {
       .pipe(gulp.dest(buildConfig.buildDir));
   }
 });
-
-<% if (polymer) { %>// compile components and copy into build directory
+<% if (polymer) { %>
+// compile components and copy into build directory
 gulp.task('components', ['bowerInject'], function () {
-  var coffeeFilter = $.filter('**/*.coffee')
+  var typeScriptFilter = $.filter('**/*.ts')
+    , coffeeFilter = $.filter('**/*.coffee')
     , hamlFilter = $.filter('**/*.haml')
     , jadeFilter = $.filter('**/*.jade')
     , lessFilter = $.filter('**/*.less')
@@ -238,6 +273,9 @@ gulp.task('components', ['bowerInject'], function () {
 
   return gulp.src(appComponents)<% if (polymer) { %>
     .pipe($.addSrc(bowerDir + 'polymer/{layout,polymer}.{html,js}', {base: bowerDir}))<% } %>
+    .pipe(typeScriptFilter)
+    .pipe($.typescript())
+    .pipe(typeScriptFilter.restore())
     .pipe(coffeeFilter)
     .pipe($.coffee())
     .pipe(coffeeFilter.restore())
@@ -284,4 +322,40 @@ gulp.task('images', ['clean'], function () {
     .pipe(gulp.dest(buildConfig.buildImages));
 });
 
-gulp.task('build', [<% if (polymer) { %>'components'<% } else { %>'bowerInject'<% } %>, 'images', 'fonts']);
+gulp.task('copyTemplates', [<% if (polymer) { %>'components'<% } else { %>'bowerInject'<% } %>], function () {
+  // always copy templates to testBuild directory
+  var buildDirectiveTemplateFiles = path.join(buildConfig.buildDir, '**/*directive.tpl.html')
+    , testDirectiveTemplateDir = path.join(buildConfig.buildTestDir, 'templates')
+    , stream = $.streamqueue({objectMode: true});
+
+  stream.queue(gulp.src([buildDirectiveTemplateFiles]));
+
+  return stream.done()
+    .pipe(gulp.dest(testDirectiveTemplateDir));
+});
+
+gulp.task('deleteTemplates', ['copyTemplates'], function (cb) {
+  // only delete templates in production
+  // the templates are injected into the app during prod build
+  if (!isProd) {
+    return cb();
+  }
+
+  gulp.src([buildConfig.buildDir + '**/*.html'])
+    .pipe(gulp.dest('tmp/' + buildConfig.buildDir))
+    .on('end', function () {
+      $.del([
+        buildConfig.buildDir + '*'<% if (polymer) { %>,
+        '!' + buildConfig.buildComponents<% } %>,
+        '!' + buildConfig.buildCss,
+        '!' + buildConfig.buildFonts,
+        '!' + buildConfig.buildImages,
+        '!' + buildConfig.buildImages,
+        '!' + buildConfig.buildJs,
+        '!' + buildConfig.extDir,
+        '!' + buildConfig.buildDir + 'index.html'
+      ], {mark: true}, cb);
+    });
+});
+
+gulp.task('build', ['deleteTemplates', 'images', 'fonts']);
