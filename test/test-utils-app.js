@@ -1,28 +1,26 @@
-/*global describe, it */
+/* global describe, it */
 'use strict';
-var a = require('a')
-  , assert = require('assert')
-  , proxyquire = require('proxyquire');
+import {expect} from 'chai';
+import {expectRequire} from 'a';
+import proxyquire from 'proxyquire';
 
-describe('App Utils', function () {
-  describe('getAppDir', function () {
-    it('should return app dir', function () {
-      // mock out path to avoid needing to use file system to find package.json
-      var pathStub = {
-          join: function () {
-            return 'build.config.js';
-          }
+describe('App Utils', () => {
+  describe('getAppDir', () => {
+    it('should return app dir', () => {
+      let pathStub, utilsProxy;
+
+      pathStub = {
+        join() {
+          return 'build.config.js';
         }
-        // proxy utils
-        , utilsProxy = proxyquire('../utils/app', {path: pathStub})
+      };
 
-        // mock response
-        , expectRequire = a.expectRequire;
+      // mock out path to avoid needing to use file system to find build.config.json
+      utilsProxy = proxyquire('../generators/utils/app', {path: pathStub});
 
       expectRequire('build.config.js').return({appDir: 'app'});
 
-      assert(utilsProxy.getAppDir('test') === 'app');
+      expect(utilsProxy.getAppDir('test')).to.eql('app');
     });
   });
-
 });
