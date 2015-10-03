@@ -4,44 +4,67 @@ import {expect} from 'chai';
 import promptsUtils from '../generators/utils/prompts';
 
 describe('Prompt Utils', () => {
-  let bowerComponentsForAllVersions;
+  describe('getAngularVersions', () => {
+    it('should return supported Angular versions', () => {
+      let expectedVersions;
 
-  bowerComponentsForAllVersions = [
-    {
-      name: 'Angular Animate',
-      value: 'animate'
-    },
-    {
-      name: 'Angular Cookies',
-      value: 'cookies'
-    },
-    {
-      name: 'Angular Resource',
-      value: 'resource'
-    },
-    {
-      name: 'Angular Sanitize',
-      value: 'sanitize'
-    },
-    {
-      name: 'Angular Touch',
-      value: 'touch'
-    },
-    {
-      name: 'Font Awesome',
-      value: 'fontawesome'
-    },
-    {
-      name: 'Lo-Dash',
-      value: 'lodash'
-    },
-    {
-      name: 'Restangular (installs Lo-Dash)',
-      value: 'restangular'
-    }
-  ];
+      expectedVersions = [
+        {
+          name: '1.4.*',
+          value: '1.4.*'
+        },
+        {
+          name: '1.3.*',
+          value: '1.3.*'
+        },
+        {
+          name: '1.2.*',
+          value: '1.2.*'
+        }
+      ];
+
+      expect(promptsUtils.getAngularVersions()).to.eql(expectedVersions);
+    });
+  });
 
   describe('getBowerComponents', () => {
+    let bowerComponentsForAllVersions;
+
+    bowerComponentsForAllVersions = [
+      {
+        name: 'Angular Animate',
+        value: 'animate'
+      },
+      {
+        name: 'Angular Cookies',
+        value: 'cookies'
+      },
+      {
+        name: 'Angular Resource',
+        value: 'resource'
+      },
+      {
+        name: 'Angular Sanitize',
+        value: 'sanitize'
+      },
+      {
+        name: 'Angular Touch',
+        value: 'touch'
+      },
+      {
+        name: 'Font Awesome',
+        value: 'fontawesome'
+      },
+      {
+        name: 'Lo-Dash',
+        value: 'lodash'
+      },
+      {
+        name: 'Restangular (installs Lo-Dash)',
+        value: 'restangular'
+      }
+    ];
+
     it('should return components avilable for any Angular version', () => {
       expect(promptsUtils.getBowerComponents()).to.eql(bowerComponentsForAllVersions);
     });
@@ -76,6 +99,132 @@ describe('Prompt Utils', () => {
         expect(bowerComponentsFor14[3]).to.eql(angularMessages);
         expect(bowerComponentsFor14.length).to.eql(10);
       });
+    });
+  });
+
+  describe('getMarkupLanguages', () => {
+    it('should return supported markup languages', () => {
+      let expectedMarkupLanguages;
+
+      expectedMarkupLanguages = [
+        {
+          name: 'HAML',
+          value: 'haml'
+        },
+        {
+          name: 'HTML',
+          value: 'html'
+        },
+        {
+          name: 'Jade',
+          value: 'jade'
+        }
+      ];
+
+      expect(promptsUtils.getMarkupLanguages()).to.eql(expectedMarkupLanguages);
+    });
+  });
+
+  describe('getModuleStructures', () => {
+    it('should return supported module structures', () => {
+      let expectedModuleStructures;
+
+      expectedModuleStructures = [
+        {
+          name: ['app/',
+                '├── module1/',
+                '│   ├── module2/',
+                '│   ├── module1-module.js',
+                '│   └── module1-controller.js',
+                '└── app.js'].join('\n'),
+          value: 'module-only'
+        },
+        {
+          name: ['app/',
+                '├── module1/',
+                '│   ├── controllers/',
+                '│   │   └── module1-controller.js',
+                '│   ├── module2/',
+                '│   └── module1-module.js',
+                '└── app.js'].join('\n'),
+          value: 'module-type'
+        }
+      ];
+
+      expect(promptsUtils.getModuleStructures()).to.eql(expectedModuleStructures);
+    });
+  });
+
+  describe('getScriptLanguages', () => {
+    it('should return supported script languages', () => {
+      let expectedScriptLanguages;
+
+      expectedScriptLanguages = [
+        {
+          name: 'CoffeeScript',
+          value: 'coffee'
+        },
+        {
+          name: 'EcmaScript2015 (ES6) using Babel',
+          value: 'es6'
+        },
+        {
+          name: 'JavaScript (ES5)',
+          value: 'js'
+        },
+        {
+          name: 'TypeScript',
+          value: 'ts'
+        }
+      ];
+
+      expect(promptsUtils.getScriptLanguages()).to.eql(expectedScriptLanguages);
+    });
+  });
+
+  describe('getStyleLanguages', () => {
+    it('should return supported style languages', () => {
+      let expectedStyleLanguages;
+
+      expectedStyleLanguages = [
+        {
+          name: 'CSS',
+          value: 'css'
+        },
+        {
+          name: 'LESS',
+          value: 'less'
+        },
+        {
+          name: 'SCSS',
+          value: 'scss'
+        },
+        {
+          name: 'Stylus',
+          value: 'styl'
+        }
+      ];
+
+      expect(promptsUtils.getStyleLanguages()).to.eql(expectedStyleLanguages);
+    });
+  });
+
+  describe('getTestFrameworks', () => {
+    it('should return supported testing frameworks', () => {
+      let expectedTestFrameworks;
+
+      expectedTestFrameworks = [
+        {
+          name: 'Jasmine',
+          value: 'jasmine'
+        },
+        {
+          name: 'Mocha with Chai',
+          value: 'mocha'
+        }
+      ];
+
+      expect(promptsUtils.getTestFrameworks()).to.eql(expectedTestFrameworks);
     });
   });
 
